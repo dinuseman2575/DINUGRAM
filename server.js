@@ -4,6 +4,7 @@ const { StringSession } = require("telegram/sessions");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 3000;
 const apiId = Number(process.env.TELEGRAM_API_ID);
@@ -12,7 +13,29 @@ const apiHash = process.env.TELEGRAM_API_HASH;
 const clients = new Map();
 
 app.get("/", (req, res) => {
-  res.send("DINUGRAM Telegram server is running!");
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>DINUGRAM Login</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+      <h2>DINUGRAM</h2>
+      <p>Enter your Telegram phone number</p>
+
+      <form action="/send-code" method="POST">
+        <input
+          type="tel"
+          name="phoneNumber"
+          placeholder="+251..."
+          required
+        />
+        <button type="submit">Send Code</button>
+      </form>
+    </body>
+    </html>
+  `);
 });
 
 app.get("/telegram-status", (req, res) => {
@@ -27,13 +50,14 @@ app.get("/telegram-status", (req, res) => {
 
 app.post("/send-code", async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const phoneNumber = req.body.phoneNumber;
 
     if (!phoneNumber) {
-      return res.status(400).json({
-        success: false,
-        message: "Phone number is required"
-      });
+      return res.status(400).send("Phone number is required");
+    }
+
+    if (!apiId || !apiHash) {
+      return res.status(500).send("Telegram API credentials are missing");
     }
 
     const client = new TelegramClient(
@@ -47,32 +71,33 @@ app.post("/send-code", async (req, res) => {
 
     const result = await client.invoke(
       new Api.auth.SendCode({
-        phoneNumber,
-        apiId,
-        apiHash,
+        phoneNumber: phoneNumber,
+        apiId: apiId,
+        apiHash: apiHash,
         settings: new Api.CodeSettings({})
       })
     );
 
     clients.set(phoneNumber, {
-      client,
+      client: client,
       phoneCodeHash: result.phoneCodeHash
     });
 
-    res.json({
-      success: true,
-      message: "Telegram verification code sent"
-    });
+    res.send(`
+      <h2>DINUGRAM</h2>
+      <p>Telegram verification code sent.</p>
+      <p>Check your Telegram app for the code.</p>
+    `);
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).send(
+      "Error: " + (error.message || "Could not send verification code")
+    );
   }
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`DINUGRAM running on port ${PORT}`);
+  console.log(\`DINUGRAM running on port \${PORT}\`);
 });
