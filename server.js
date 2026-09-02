@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
 
       <body>
         <h2>DINUGRAM</h2>
+
         <p>Enter your Telegram phone number</p>
 
         <form action="/send-code" method="POST">
@@ -47,6 +48,7 @@ app.get("/", (req, res) => {
 app.get("/telegram-status", (req, res) => {
   res.json({
     connected: !!(apiId && apiHash),
+
     message:
       apiId && apiHash
         ? "Telegram API credentials loaded successfully"
@@ -88,6 +90,14 @@ app.post("/send-code", async (req, res) => {
       })
     );
 
+    const deliveryType =
+      result.type?.className ||
+      result.type?.constructor?.name ||
+      "Unknown";
+
+    console.log("Telegram code delivery type:", deliveryType);
+    console.log("Code requested for phone ending:", phoneNumber.slice(-4));
+
     clients.set(phoneNumber, {
       client: client,
       phoneCodeHash: result.phoneCodeHash
@@ -98,6 +108,7 @@ app.post("/send-code", async (req, res) => {
       <html>
         <head>
           <title>DINUGRAM Verification</title>
+
           <meta
             name="viewport"
             content="width=device-width, initial-scale=1"
@@ -106,13 +117,23 @@ app.post("/send-code", async (req, res) => {
 
         <body>
           <h2>DINUGRAM</h2>
-          <p>Telegram verification code sent.</p>
-          <p>Check your Telegram app for the code.</p>
+
+          <p>Telegram verification code requested.</p>
+
+          <p>
+            Delivery type:
+            <strong>${deliveryType}</strong>
+          </p>
+
+          <p>
+            Check your Telegram app or the delivery method shown above.
+          </p>
         </body>
       </html>
     `);
+
   } catch (error) {
-    console.error(error);
+    console.error("Send code error:", error);
 
     res.status(500).send(
       "Error: " +
