@@ -457,6 +457,31 @@ app.get("/chats", async (req, res) => {
 });
 
 
+app.get("/chat/:id", async (req, res) => {
+  try {
+    if (!activeSession) {
+      return res.status(401).send("Please login to Telegram first.");
+    }
+
+    const chatId = req.params.id;
+
+    const messages = await activeSession.getMessages(chatId, {
+      limit: 30
+    });
+
+    res.json(
+      messages.map((message) => ({
+        id: message.id,
+        text: message.message || "",
+        date: message.date
+      }))
+    );
+  } catch (error) {
+    console.error("Messages error:", error);
+    res.status(500).send("Could not load messages.");
+  }
+});
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`DINUGRAM running on port ${PORT}`);
