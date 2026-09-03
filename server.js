@@ -483,6 +483,41 @@ app.get("/chat/:id", async (req, res) => {
 });
 
 
+app.get("/chat/:id/view", async (req, res) => {
+    if (!activeSession) {
+      return res.status(401).send("Please login to Telegram first.");
+    }
+
+    const chatId = req.params.id;
+    const messages = await activeSession.getMessages(chatId, {
+      limit: 30
+    });
+
+    const messageItems = messages.map((message) => `
+      <div style="padding:12px;border-bottom:1px solid #eee;">
+        ${message.message || ""}
+      </div>
+    `).join("");
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>DINUGRAM Chat</title>
+        </head>
+        <body>
+          <h2>DINUGRAM</h2>
+          ${messageItems}
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error("Chat view error:", error);
+    res.status(500).send("Could not load chat.");
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`DINUGRAM running on port ${PORT}`);
 });
