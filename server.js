@@ -337,6 +337,27 @@ app.get("/me", async (req, res) => {
     <p>Telegram login successful ✅</p>
   `);
 });
+app.get("/chats", async (req, res) => {
+  try {
+    if (!activeSession) {
+      return res.status(401).send("Please login to Telegram first.");
+    }
+
+    const dialogs = await activeSession.getDialogs({ limit: 20 });
+
+    const chats = dialogs.map((dialog) => ({
+      id: dialog.id?.toString(),
+      name: dialog.title || dialog.name || "Unknown",
+      unreadCount: dialog.unreadCount || 0
+    }));
+
+    res.json(chats);
+  } catch (error) {
+    console.error("Chats error:", error);
+    res.status(500).send("Could not load Telegram chats.");
+  }
+});
+
 
 
 app.listen(PORT, "0.0.0.0", () => {
