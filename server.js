@@ -338,21 +338,118 @@ app.get("/me", async (req, res) => {
     <p>Telegram login successful ✅</p>
   `);
 });
+
 app.get("/chats", async (req, res) => {
   try {
     if (!activeSession) {
       return res.status(401).send("Please login to Telegram first.");
     }
 
-    const dialogs = await activeSession.getDialogs({ limit: 20 });
+    const dialogs = await activeSession.getDialogs({ limit: 30 });
 
-    const chats = dialogs.map((dialog) => ({
-      id: dialog.id?.toString(),
-      name: dialog.title || dialog.name || "Unknown",
-      unreadCount: dialog.unreadCount || 0
-    }));
+    const chatItems = dialogs.map((dialog) => {
+      const name = dialog.title || dialog.name || "Unknown";
+      const unread = dialog.unreadCount || 0;
+      const firstLetter = name.charAt(0).toUpperCase();
 
-    res.json(chats);
+      return `
+        <div class="chat">
+          <div class="avatar">${firstLetter}</div>
+          <div class="info">
+            <div class="name">${name}</div>
+            <div class="message">Telegram conversation</div>
+          </div>
+          ${unread > 0 ? `<div class="unread">${unread}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>DINUGRAM</title>
+        <style>
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+          }
+
+          .header {
+            padding: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            background: white;
+          }
+
+          .chat {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+          }
+
+          .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #3390ec;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-right: 12px;
+          }
+
+          .info {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .name {
+            font-size: 17px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .message {
+            color: #777;
+            margin-top: 5px;
+            font-size: 14px;
+          }
+
+          .unread {
+            background: #3390ec;
+            color: white;
+            border-radius: 20px;
+            min-width: 25px;
+            padding: 5px 8px;
+            text-align: center;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="header">DINUGRAM</div>
+        ${chatItems}
+      </body>
+      </html>
+    `);
+
   } catch (error) {
     console.error("Chats error:", error);
     res.status(500).send("Could not load Telegram chats.");
