@@ -274,7 +274,6 @@ app.post("/verify-password", async (req, res) => {
     );
 
     const session = client.session.save();
-console.log("SESSION:", session);
 
 
     console.log("Two-Step Verification successful");
