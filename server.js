@@ -276,7 +276,8 @@ app.post("/verify-password", async (req, res) => {
     );
 
     const session = client.session.save();
-
+activeSession = client;
+    
 
     console.log("Two-Step Verification successful");
     console.log("Telegram session created successfully");
