@@ -1,8 +1,7 @@
 const express = require("express");
 const { TelegramClient, Api } = require("telegram");
 const { StringSession } = require("telegram/sessions");
-const { computePasswordSrpCheck } = require("telegram/Password");
-
+const { computeCheck } = require("telegram/Password");
 const app = express();
 
 app.use(express.json());
@@ -263,7 +262,7 @@ app.post("/verify-password", async (req, res) => {
       new Api.account.GetPassword({})
     );
 
-    const passwordCheck = await computePasswordSrpCheck(
+    const passwordCheck = await computeCheck(
       passwordInfo,
       password
     );
