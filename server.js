@@ -484,20 +484,24 @@ app.get("/chat/:id", async (req, res) => {
 
 
 app.get("/chat/:id/view", async (req, res) => {
+  try {
     if (!activeSession) {
       return res.status(401).send("Please login to Telegram first.");
     }
 
     const chatId = req.params.id;
+
     const messages = await activeSession.getMessages(chatId, {
       limit: 30
     });
 
-    const messageItems = messages.map((message) => `
-      <div style="padding:12px;border-bottom:1px solid #eee;">
-        ${message.message || ""}
-      </div>
-    `).join("");
+    const messageItems = messages
+      .map((message) => {
+        return `<div style="padding:12px;border-bottom:1px solid #eee;">
+          ${message.message || ""}
+        </div>`;
+      })
+      .join("");
 
     res.send(`
       <!DOCTYPE html>
