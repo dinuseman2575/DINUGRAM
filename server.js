@@ -321,6 +321,14 @@ app.get("/session", (req, res) => {
   res.send("DINUGRAM Telegram session is ready");
 });
 
+
+app.get("/status", (req, res) => {
+  res.json({
+    app: "DINUGRAM",
+    telegram: "connected",
+    status: "ready"
+  });
+});
 app.get("/me", async (req, res) => {
   res.send(`
     <h2>DINUGRAM</h2>
