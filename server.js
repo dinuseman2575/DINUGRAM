@@ -317,6 +317,10 @@ app.post("/verify-password", async (req, res) => {
 });
 
 
+app.get("/session", (req, res) => {
+  res.send("DINUGRAM Telegram session is ready");
+});
+
 app.get("/me", async (req, res) => {
   res.send(`
     <h2>DINUGRAM</h2>
