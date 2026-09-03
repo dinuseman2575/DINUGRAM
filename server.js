@@ -12,6 +12,8 @@ const apiId = Number(process.env.TELEGRAM_API_ID);
 const apiHash = process.env.TELEGRAM_API_HASH;
 
 const clients = new Map();
+let activeSession = null;
+
 
 app.get("/", (req, res) => {
   res.send(`
@@ -335,6 +337,8 @@ app.get("/me", async (req, res) => {
     <p>Telegram login successful ✅</p>
   `);
 });
+
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`DINUGRAM running on port ${PORT}`);
 });
