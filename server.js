@@ -315,6 +315,13 @@ app.post("/verify-password", async (req, res) => {
   }
 });
 
+
+app.get("/me", async (req, res) => {
+  res.send(`
+    <h2>DINUGRAM</h2>
+    <p>Telegram login successful ✅</p>
+  `);
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`DINUGRAM running on port ${PORT}`);
 });
