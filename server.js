@@ -353,15 +353,15 @@ app.get("/chats", async (req, res) => {
       const firstLetter = name.charAt(0).toUpperCase();
 
       return `
-        <div class="chat">
-          <div class="avatar">${firstLetter}</div>
-          <div class="info">
-            <div class="name">${name}</div>
-            <div class="message">Telegram conversation</div>
-          </div>
-          ${unread > 0 ? `<div class="unread">${unread}</div>` : ""}
-        </div>
-      `;
+  <a href="/chat/${dialog.id}/view" class="chat" style="text-decoration:none;color:inherit;">
+    <div class="avatar">${firstLetter}</div>
+    <div class="info">
+      <div class="name">${name}</div>
+      <div class="message">Telegram conversation</div>
+    </div>
+    ${unread > 0 ? `<div class="unread">${unread}</div>` : ""}
+  </a>
+`;
     }).join("");
 
     res.send(`
