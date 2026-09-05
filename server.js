@@ -496,12 +496,34 @@ app.get("/chat/:id/view", async (req, res) => {
     });
 
     const messageItems = messages
-      .map((message) => {
-        return `<div style="padding:12px;border-bottom:1px solid #eee;">
-          ${message.message || ""}
-        </div>`;
-      })
-      .join("");
+  .slice()
+  .reverse()
+  .map((message) => {
+    const text = message.message || "";
+    const mine = message.out === true;
+
+    return `
+      <div style="
+        display:flex;
+        justify-content:${mine ? "flex-end" : "flex-start"};
+        margin:8px 10px;
+      ">
+        <div style="
+          max-width:75%;
+          padding:9px 12px;
+          border-radius:14px;
+          background:${mine ? "#d9fdd3" : "#ffffff"};
+          box-shadow:0 1px 2px rgba(0,0,0,.15);
+          font-family:Arial,sans-serif;
+          font-size:16px;
+          word-wrap:break-word;
+        ">
+          ${text}
+        </div>
+      </div>
+    `;
+  })
+  .join("");
 
     res.send(`
       <!DOCTYPE html>
