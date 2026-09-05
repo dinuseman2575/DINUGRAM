@@ -490,7 +490,13 @@ app.get("/chat/:id/view", async (req, res) => {
     }
 
     const chatId = req.params.id;
+const entity = await activeSession.getEntity(chatId);
 
+const chatName =
+  entity.title ||
+  [entity.firstName, entity.lastName].filter(Boolean).join(" ") ||
+  entity.username ||
+  "DINUGRAM";
     const messages = await activeSession.getMessages(chatId, {
       limit: 30
     });
@@ -596,7 +602,7 @@ body{
 
 <div class="header">
   <a class="back" href="/chats">‹</a>
-  DINUGRAM
+  ${chatName}
 </div>
 
 <div class="messages">
