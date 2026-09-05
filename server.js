@@ -497,6 +497,9 @@ const chatName =
   [entity.firstName, entity.lastName].filter(Boolean).join(" ") ||
   entity.username ||
   "DINUGRAM";
+ const chatStatus = entity.participantsCount
+  ? `${entity.participantsCount} members`
+  : (entity.status ? "online" : "");   
     const messages = await activeSession.getMessages(chatId, {
       limit: 30
     });
@@ -602,7 +605,10 @@ body{
 
 <div class="header">
   <a class="back" href="/chats">‹</a>
-  ${chatName}
+  <div>
+  <div>${chatName}</div>
+  <div style="font-size:12px;font-weight:normal;opacity:.85;">${chatStatus}</div>
+</div>
 </div>
 
 <div class="messages">
