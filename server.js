@@ -526,26 +526,96 @@ app.get("/chat/:id/view", async (req, res) => {
   .join("");
 
     res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>DINUGRAM Chat</title>
-        </head>
-        <body>
-          <h2>DINUGRAM</h2>
-          ${messageItems}
-  <form action="/chat/${chatId}/send" method="POST" style="display:flex;gap:8px;padding:12px;">
+     <!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DINUGRAM</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#e7ebee;
+}
+.header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:60px;
+  background:#3390ec;
+  color:white;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+  font-size:20px;
+  font-weight:bold;
+  z-index:10;
+}
+.back{
+  margin-right:15px;
+  color:white;
+  text-decoration:none;
+  font-size:28px;
+}
+.messages{
+  padding:75px 5px 85px;
+}
+.composer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  padding:8px;
+  display:flex;
+  gap:8px;
+  border-top:1px solid #ddd;
+}
+.composer input{
+  flex:1;
+  border:1px solid #ddd;
+  border-radius:22px;
+  padding:12px 15px;
+  font-size:16px;
+  outline:none;
+}
+.composer button{
+  border:0;
+  border-radius:50%;
+  width:45px;
+  height:45px;
+  background:#3390ec;
+  color:white;
+  font-size:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="/chats">‹</a>
+  DINUGRAM
+</div>
+
+<div class="messages">
+  ${messageItems}
+</div>
+
+<form class="composer" action="/chat/${chatId}/send" method="POST">
   <input
     type="text"
     name="message"
     placeholder="Message"
+    autocomplete="off"
     required
-    style="flex:1;padding:10px;"
-  />
-  <button type="submit">Send</button>
-</form>      </body>
-      </html>
+  >
+  <button type="submit">➤</button>
+</form>
+
+</body>
+</html> 
     `);
   } catch (error) {
     console.error("Chat view error:", error);
