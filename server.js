@@ -513,7 +513,16 @@ app.get("/chat/:id/view", async (req, res) => {
         <body>
           <h2>DINUGRAM</h2>
           ${messageItems}
-        </body>
+  <form action="/chat/${chatId}/send" method="POST" style="display:flex;gap:8px;padding:12px;">
+  <input
+    type="text"
+    name="message"
+    placeholder="Message"
+    required
+    style="flex:1;padding:10px;"
+  />
+  <button type="submit">Send</button>
+</form>      </body>
       </html>
     `);
   } catch (error) {
@@ -522,6 +531,26 @@ app.get("/chat/:id/view", async (req, res) => {
   }
 });
 
+
+app.post("/chat/:id/send", async (req, res) => {
+  try {
+    if (!activeSession) {
+      return res.status(401).send("Please login to Telegram first.");
+    }
+
+    const chatId = req.params.id;
+    const message = req.body.message;
+
+    await activeSession.sendMessage(chatId, {
+      message: message
+    });
+
+    res.redirect(`/chat/${chatId}/view`);
+  } catch (error) {
+    console.error("Send message error:", error);
+    res.status(500).send("Could not send message.");
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`DINUGRAM running on port ${PORT}`);
 });
