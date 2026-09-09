@@ -98,7 +98,10 @@ const result = await Promise.race([
 ]);
 
 console.log("Telegram SendCode response:", result);
-
+console.log("Code delivery type:", result.type?.className);
+console.log("Next delivery type:", result.nextType?.className);
+console.log("Timeout:", result.timeout);
+    
     clients.set(phoneNumber, {
       client: client,
       phoneCodeHash: result.phoneCodeHash
