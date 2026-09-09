@@ -97,7 +97,7 @@ const result = await Promise.race([
   )
 ]);
 
-console.log("Telegram SendCode response received");
+console.log("Telegram SendCode response:", result);
 
     clients.set(phoneNumber, {
       client: client,
