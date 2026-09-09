@@ -449,6 +449,38 @@ app.get("/chats", async (req, res) => {
             text-align: center;
             font-size: 12px;
           }
+.header {
+  background: #3390ec;
+  color: white;
+  padding: 18px 16px;
+  font-size: 22px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chat {
+  transition: background 0.2s;
+}
+
+.chat:active {
+  background: #e8f3fc;
+}
+
+.avatar {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.message {
+  color: #707579;
+}
+          
         </style>
       </head>
 
