@@ -80,16 +80,24 @@ app.post("/send-code", async (req, res) => {
     );
 
     await client.connect();
-console.log("Sending Telegram code to:", phoneNumber);
-    const result = await client.invoke(
-     
-      new Api.auth.SendCode({
-        phoneNumber: phoneNumber,
-        apiId: apiId,
-        apiHash: apiHash,
-        settings: new Api.CodeSettings({})
-      })
-    );
+
+console.log("Sending Telegram login code...");
+
+const result = await Promise.race([
+  client.invoke(
+    new Api.auth.SendCode({
+      phoneNumber: phoneNumber,
+      apiId: apiId,
+      apiHash: apiHash,
+      settings: new Api.CodeSettings({})
+    })
+  ),
+  new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("SendCode timeout after 20 seconds")), 20000)
+  )
+]);
+
+console.log("Telegram SendCode response received");
 
     clients.set(phoneNumber, {
       client: client,
