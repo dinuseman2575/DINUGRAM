@@ -188,11 +188,8 @@ app.post("/verify-code", async (req, res) => {
 
     clients.delete(phoneNumber);
 
-    res.send(`
-      <h2>DINUGRAM</h2>
-      <h3>Login successful ✅</h3>
-      <p>Your Telegram account is connected.</p>
-    `);
+  activeSession = client;
+return res.redirect("/chats");  
 
   } catch (error) {
     console.error("Verify code error:", error);
