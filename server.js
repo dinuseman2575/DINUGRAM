@@ -80,8 +80,9 @@ app.post("/send-code", async (req, res) => {
     );
 
     await client.connect();
-
+console.log("Sending Telegram code to:", phoneNumber);
     const result = await client.invoke(
+     
       new Api.auth.SendCode({
         phoneNumber: phoneNumber,
         apiId: apiId,
