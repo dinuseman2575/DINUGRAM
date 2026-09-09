@@ -552,6 +552,10 @@ const chatName =
     const text = message.message || "";
     const mine = message.out === true;
 
+    const time = new Date(message.date * 1000).toLocaleTimeString([], {
+  hour: "2-digit",
+  minute: "2-digit"
+});
     return `
       <div style="
         display:flex;
@@ -569,6 +573,9 @@ const chatName =
           word-wrap:break-word;
         ">
           ${text}
+          <div style="font-size:11px;color:#777;text-align:right;margin-top:4px;">
+  ${time} ${mine ? "✓✓" : ""}
+</div>
         </div>
       </div>
     `;
