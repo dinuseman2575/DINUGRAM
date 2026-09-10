@@ -361,11 +361,25 @@ const chatItemArray = await Promise.all(
     const name = dialog.title || dialog.name || "Unknown";
     const unread = dialog.unreadCount || 0;
     const firstLetter = name.charAt(0).toUpperCase();
+    let photoBase64 = "";
+
+try {
+  const photo = await activeSession.downloadProfilePhoto(dialog.entity);
+  if (photo && photo.length) {
+    photoBase64 = `data:image/jpeg;base64,${photo.toString("base64")}`;
+  }
+} catch (e) {
+  photoBase64 = "";
+}
     const lastMessage = dialog.message?.message || "";
 
     return `
       <a href="/chat/${dialog.id}/view" class="chat" style="text-decoration:none;color:inherit;">
-        <div class="avatar">${firstLetter}</div>
+        <div class="avatar">
+  ${photoBase64
+    ? `<img src="${photoBase64}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+    : firstLetter}
+</div>
         <div class="info">
           <div class="name">${name}</div>
           <div class="message">${lastMessage || "Telegram conversation"}</div>
