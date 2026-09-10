@@ -544,14 +544,18 @@ const chatName =
     const messages = await activeSession.getMessages(chatId, {
       limit: 30
     });
-
+const dialogs = await activeSession.getDialogs({ limit: 100 });
+const currentDialog = dialogs.find(d => String(d.id) === String(chatId));
+const readOutboxMaxId = currentDialog?.dialog?.readOutboxMaxId || 0;
+    
     const messageItems = messages
   .slice()
   .reverse()
   .map((message) => {
     const text = message.message || "";
     const mine = message.out === true;
-
+const isRead = mine && message.id <= readOutboxMaxId;
+    
     const time = new Date(message.date * 1000).toLocaleTimeString([], {
   hour: "2-digit",
   minute: "2-digit"
@@ -574,7 +578,7 @@ const chatName =
         ">
           ${text}
           <div style="font-size:11px;color:#777;text-align:right;margin-top:4px;">
-  ${time} ${mine ? "✓✓" : ""}
+  ${time} ${mine ? (isRead ? "✓✓" : "✓") : ""}
 </div>
         </div>
       </div>
