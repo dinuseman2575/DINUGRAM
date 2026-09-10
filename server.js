@@ -372,7 +372,7 @@ const chatItems = await Promise.all(dialogs.map(async (dialog) => {
     ${unread > 0 ? `<div class="unread">${unread}</div>` : ""}
   </a>
 `;
-}))).join("");
+})).join("");
 
     res.send(`
       <!DOCTYPE html>
