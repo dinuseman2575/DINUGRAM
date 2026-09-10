@@ -356,22 +356,23 @@ app.get("/chats", async (req, res) => {
 
     const dialogs = await activeSession.getDialogs({ limit: 30 });
 
-    const chatItems = dialogs.map((dialog) => {
+const chatItems = await Promise.all(dialogs.map(async (dialog) => {
       const name = dialog.title || dialog.name || "Unknown";
       const unread = dialog.unreadCount || 0;
       const firstLetter = name.charAt(0).toUpperCase();
 
+  const lastMessage = dialog.message?.message || "";
       return `
   <a href="/chat/${dialog.id}/view" class="chat" style="text-decoration:none;color:inherit;">
     <div class="avatar">${firstLetter}</div>
     <div class="info">
       <div class="name">${name}</div>
-      <div class="message">Telegram conversation</div>
+      <div class="message">${lastMessage || "Telegram conversation"}</div>
     </div>
     ${unread > 0 ? `<div class="unread">${unread}</div>` : ""}
   </a>
 `;
-    }).join("");
+}))).join("");
 
     res.send(`
       <!DOCTYPE html>
