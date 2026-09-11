@@ -83,19 +83,10 @@ app.post("/send-code", async (req, res) => {
 
 console.log("Sending Telegram login code...");
 
-const result = await Promise.race([
-  client.invoke(
-    new Api.auth.SendCode({
-      phoneNumber: phoneNumber,
-      apiId: apiId,
-      apiHash: apiHash,
-      settings: new Api.CodeSettings({})
-    })
-  ),
-  new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("SendCode timeout after 20 seconds")), 20000)
-  )
-]);
+const result = await client.sendCode(
+  { apiId, apiHash },
+  phoneNumber
+);
 
 console.log("Telegram SendCode response:", result);
 console.log("Code delivery type:", result.type?.className);
