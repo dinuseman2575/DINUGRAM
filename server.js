@@ -85,7 +85,8 @@ console.log("Sending Telegram login code...");
 
 const result = await client.sendCode(
   { apiId, apiHash },
-  phoneNumber
+  phoneNumber,
+  true
 );
 
 console.log("Telegram SendCode response:", result);
